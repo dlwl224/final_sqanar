@@ -216,7 +216,7 @@ pip install flask flask-cors flask-jwt-extended pyjwt pymysql redis python-doten
             easyocr pillow python-whois dnspython idna beautifulsoup4 boto3
 python -m Server.app
 ```
-➡️ http://localhost:5000
+➡️ 실행한 컴퓨터의 브라우저에서 `localhost:5000` 로 접속합니다. (배포된 공개 주소가 아니라, 직접 실행했을 때만 열리는 로컬 주소입니다)
 
 ---
 
