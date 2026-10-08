@@ -210,9 +210,10 @@ REDIS_URL=redis://localhost:6379/0
 **2. 서버 실행**
 ```bash
 cd jwt_change
-pip install flask flask-cors flask-jwt-extended pymysql redis python-dotenv \
-            torch transformers langchain langchain-community langchain-google-genai \
-            faiss-cpu sentence-transformers easyocr python-whois dnspython boto3
+pip install flask flask-cors flask-jwt-extended pyjwt pymysql redis python-dotenv requests \
+            torch transformers pytorch-pretrained-bert scikit-learn joblib pandas numpy \
+            langchain langchain-community langchain-google-genai faiss-cpu sentence-transformers \
+            easyocr pillow python-whois dnspython idna beautifulsoup4 boto3
 python -m Server.app
 ```
 ➡️ http://localhost:5000
