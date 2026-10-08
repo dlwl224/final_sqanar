@@ -160,11 +160,13 @@ def set_judgment(report_id: int):
     try:
         BoardDAO.update_judgment(report_id, judgment, confidence, updater_id)
         return jsonify({"ok": True})
-    except ValueError as ve:
-        return jsonify({"ok": False, "message": str(ve)}), 400
-    except Exception as e:
-        current_app.logger.error(f"set_judgment fail: {e}")
-        return jsonify({"ok": False, "message": f"갱신 실패: {e}"}), 500
+    except ValueError:
+        # 내부 예외 메시지 대신 고정 문구만 응답 (정보 노출 방지)
+        current_app.logger.warning("set_judgment invalid request: report_id=%s", report_id, exc_info=True)
+        return jsonify({"ok": False, "message": "잘못된 요청입니다. 판정 값과 신고 번호를 확인해 주세요."}), 400
+    except Exception:
+        current_app.logger.exception("set_judgment fail: report_id=%s", report_id)
+        return jsonify({"ok": False, "message": "갱신 실패: 서버 오류가 발생했습니다."}), 500
 
 @board_bp.route("/report/<int:report_id>/analyze", methods=["GET"])
 def get_analysis_for_admin(report_id: int):
