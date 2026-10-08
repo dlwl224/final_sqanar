@@ -150,9 +150,12 @@ flowchart LR
 | :--- | :--- |
 | **인증** | `flask-jwt-extended` 기반 JWT, `Authorization: Bearer` **헤더 방식**만 허용 (쿠키 미사용 → 모바일 앱에 맞춤) |
 | **비밀번호 저장** | `werkzeug.security`로 **해시 저장**, 비밀번호 변경 시 기존 비밀번호와 동일 여부 검사 |
+| **SSRF 방어** | 사용자 URL로 접속하기 전 DNS 해석 결과가 모두 공인 IP인지 검사, 리다이렉트도 단계마다 재검증 ([`net_safety.py`](jwt_change/urlbert/urlbert2/core/net_safety.py)) |
+| **오류 응답** | 내부 예외 내용은 서버 로그에만 남기고, 사용자에게는 고정 문구만 응답 |
 | **오픈 리다이렉트 방지** | 로그인 후 이동 경로를 같은 호스트로만 제한 (`_is_safe_url`) |
 | **비밀값 관리** | DB 접속 정보 · Gemini API 키 · Redis 주소를 환경 변수로 분리 |
 | **챗봇 가드레일** | 보안과 무관한 질문은 답변하지 않도록 차단 |
+| **저장소 보안** | GitHub CodeQL · Dependabot · Secret scanning(Push protection) 적용 |
 
 ---
 
@@ -169,6 +172,11 @@ flowchart LR
 | 5 | SSL 인증서 확인 시 TLS 1.0/1.1 허용 | 취약한 프로토콜로 연결 | 최소 TLS 1.2 강제 | ✅ 조치 |
 | 6 | URL 추출 정규식 ReDoS | 긴 입력으로 응답 지연(DoS) | 반복 횟수 상한 + 입력 2,000자 제한 | ✅ 조치 |
 | 7 | 이력 조회 `filter` 값 반사 | 반사형 XSS | 허용된 값(`all`·`legit`·`malicious`)만 사용 | ✅ 조치 |
+| 8 | 오류 응답에 예외 메시지 포함 | DB 구조·경로 등 내부 정보 노출 | 고정 문구로 응답, 상세 내용은 서버 로그로 | ✅ 조치 |
+
+**남은 한계**
+- SSRF 검사는 요청 직전에 DNS를 해석해 확인합니다. 검사 직후 IP가 바뀌는 **DNS rebinding**까지 막으려면 검사한 IP로 연결을 고정해야 하며, 다음 개선 과제로 남겨 두었습니다.
+- CodeQL은 사용자 URL이 요청에 쓰이는 흐름 자체를 SSRF로 표시합니다. URL 분석이 서비스의 핵심 기능이므로 검증 로직을 두고 해당 경고는 False positive로 처리했습니다.
 
 ---
 
@@ -189,6 +197,7 @@ jwt_change/
 │   ├── memory_redis.py     # Redis 대화 기록
 │   └── tools/              # LangChain 도구 (URL-BERT · RAG · 요약)
 ├── urlbert/urlbert2/       # URL-BERT 모델 · 학습 · 추론 코드
+│   └── core/net_safety.py  # SSRF 방어 (공인 IP 검사 · 안전한 요청)
 ├── data/rag_dataset.jsonl  # RAG 보안 지식 데이터
 └── scripts/build_index.py  # FAISS 인덱스 생성
 ```
