@@ -10,6 +10,8 @@ from urllib.parse import urlparse # URL 파싱을 위해 추가
 
 from pytorch_pretrained_bert import BertTokenizer
 
+from .net_safety import safe_get
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -43,7 +45,8 @@ def get_header_info(url: str) -> str:
     }
 
     try:
-        response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT_SECONDS, allow_redirects=True)
+        # SSRF 방지: 공인 IP로만 접속하고, 리다이렉트도 단계마다 검사
+        response = safe_get(url, headers=headers, timeout=REQUEST_TIMEOUT_SECONDS)
         resp_headers = response.headers
         
         important = {

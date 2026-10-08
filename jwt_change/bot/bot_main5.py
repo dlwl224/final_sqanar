@@ -190,7 +190,9 @@ simple_url_prompt = SIMPLE_URL_PROMPT
 url_prompt = URL_PROMPT
 
 # 8) 정규식
-URL_PATTERN = re.compile(r'(https?://\S+|(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}\S*)')
+# ReDoS 방지: 반복 횟수에 상한을 둔 패턴 + 입력 길이 제한
+URL_PATTERN = re.compile(r'(https?://\S{1,2048}|(?:[A-Za-z0-9-]{1,63}\.){1,10}[A-Za-z]{2,24}\S{0,2048})')
+MAX_QUERY_LEN = 2000
 
 # 9) verdict 추출
 def _infer_verdict_from_text(bert_text: str) -> str:
@@ -271,7 +273,7 @@ def get_chatbot_response(query: str, session_id: Optional[str] = None) -> Dict[s
         chat_history = []
 
     history_text = history_to_text(chat_history)
-    match = URL_PATTERN.search(text)
+    match = URL_PATTERN.search(text[:MAX_QUERY_LEN])
     if match:
         print(f"✅ [bot/bot_main5.py] URL을 찾았습니다: {match.group(1)}")
     else:

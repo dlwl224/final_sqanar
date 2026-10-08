@@ -3,6 +3,8 @@
 import csv
 import requests
 from bs4 import BeautifulSoup
+
+from urlbert.urlbert2.core.net_safety import safe_get
 from urllib.parse import urlparse, urljoin
 from multiprocessing import Pool, cpu_count
 from tqdm import tqdm
@@ -27,7 +29,8 @@ def analyze_url_entry(row):
     """
     url = row['url']
     try:
-        response = requests.get(url, timeout=10)
+        # SSRF 방지: 공인 IP로만 접속하고, 리다이렉트도 단계마다 검사
+        response = safe_get(url, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
         base_domain = urlparse(url).netloc
 
