@@ -47,10 +47,10 @@
 | :--- | :-: |
 | XGBoost | 95.99% |
 | BERT (일반) | 94.03% |
-| **URL-BERT (최종)** | **99.72%** (F1 99.72%) |
+| **URL-BERT + Header (최종)** | **99.64%** (F1 99.64%) |
 
-- 일반 BERT·XGBoost의 한계를 분석하고, URL 구조에 특화된 **URL-BERT를 직접 구현·파인튜닝**하여 정확도를 크게 개선
-- URL + HTTP Response Header **10만 건**으로 파인튜닝
+- 일반 BERT·XGBoost의 한계를 분석하고, URL 구조에 특화된 **URL-BERT를 도입·파인튜닝**하여 정확도를 크게 개선
+- URL + HTTP Response Header **10만 건**으로 파인튜닝 (학습 기록: [urlbert](https://github.com/dlwl224/urlbert))
 - 블랙리스트에 없는 **제로데이 URL 대응력** 확보
 
 ---
