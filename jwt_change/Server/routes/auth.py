@@ -1,5 +1,5 @@
 # routes/auth.py
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app
 from Server.models.user_dao import UserDAO
 from Server.models.history_dao import HistoryDAO
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -144,10 +144,11 @@ def register_proc():
             "success": False,
             "error": "데이터베이스 오류가 발생했습니다."
         }), 500
-    except Exception as e:
+    except Exception:
+        current_app.logger.exception("register failed")
         return jsonify({
             "success": False,
-            "error": f"서버 오류가 발생했습니다: {e}"
+            "error": "서버 오류가 발생했습니다."
         }), 500
 
 @auth_bp.route("/check-email")

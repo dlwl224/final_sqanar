@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.exceptions import BadRequest
 import json
@@ -89,9 +89,10 @@ def chatbot_api():
             session_id = None
     try:
         data = get_chatbot_response(query=q, session_id=session_id) or {}
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({"reply": "오류가 발생했어요.", "error": str(e)}), 500
+    except Exception:
+        # 상세 오류는 서버 로그에만 남기고, 사용자에게는 고정 문구만 응답
+        current_app.logger.exception("chatbot response failed")
+        return jsonify({"reply": "오류가 발생했어요."}), 500
 
     reply = data.get("reply") or data.get("answer") or ""
     response_payload = {
@@ -138,9 +139,10 @@ def save_history():
             cur.execute(sql, (history_id, str(user_id), title, preview, messages_json, now, expires_at))
             conn.commit()
             status_code = 201 if cur.rowcount == 1 else 200
-    except Exception as e:
+    except Exception:
         conn.rollback()
-        return jsonify({"ok": False, "error": str(e)}), 500
+        current_app.logger.exception("chat history save failed")
+        return jsonify({"ok": False, "error": "대화 기록 저장 중 오류가 발생했습니다."}), 500
     finally:
         conn.close()
     return jsonify({"ok": True}), status_code
