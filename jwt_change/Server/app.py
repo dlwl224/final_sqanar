@@ -5,6 +5,7 @@ from flask_jwt_extended import (
     jwt_required, get_jwt_identity, set_access_cookies, set_refresh_cookies
 )
 import uuid
+import os
 from datetime import timedelta
 
 from Server.routes.home import home_bp
@@ -57,4 +58,5 @@ def protected():
     return jsonify({"msg": f"Hello {current_user}!"})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False, threaded=True)
+    # 디버그 모드는 FLASK_DEBUG=1 일 때만 켜짐 (운영 환경에서 Werkzeug 디버거 노출 방지)
+    app.run(host="0.0.0.0", port=5000, debug=os.getenv("FLASK_DEBUG") == "1", use_reloader=False, threaded=True)

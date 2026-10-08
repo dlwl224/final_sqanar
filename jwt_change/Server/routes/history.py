@@ -39,6 +39,8 @@ def history():
     # 필터
     # 세션 기반 app_settings 없으므로 기본값 all
     filt = request.args.get("filter") or "all"
+    if filt not in ("all", "legit", "malicious"):  # 허용된 값만 사용 (반사형 XSS 방지)
+        filt = "all"
 
     scans, total, pages = [], None, None
     page, per_page = 1, 10

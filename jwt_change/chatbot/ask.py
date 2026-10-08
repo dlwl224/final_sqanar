@@ -68,9 +68,11 @@ chat_tool = Tool(
     description="일반 대화 및 간단한 정보 답변용"
 )
 
+# ReDoS 방지: 반복 횟수에 상한을 둔 패턴 + 입력 길이 제한
 URL_PATTERN = re.compile(
-    r'(https?://\S+|(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}\S*)'
+    r'(https?://\S{1,2048}|(?:[A-Za-z0-9-]{1,63}\.){1,10}[A-Za-z]{2,24}\S{0,2048})'
 )
+MAX_QUERY_LEN = 2000
 
 # [ADD] URL 정규화: http/https, 소문자 도메인, 끝 슬래시 일관화
 def normalize_url(u: str) -> str:
@@ -123,7 +125,7 @@ def handle_ask(query: str) -> AskResponse:
     if not text:
         raise HTTPException(status_code=400, detail="query가 비어 있습니다.")
 
-    match = URL_PATTERN.search(text)
+    match = URL_PATTERN.search(text[:MAX_QUERY_LEN])
     if match:
         raw_url = match.group(1)
         url = normalize_url(raw_url)  # [ADD] 정규화

@@ -2,12 +2,18 @@ import ssl
 import socket
 from datetime import datetime
 
+from urlbert.urlbert2.core.net_safety import is_public_hostname
+
 # SSL 인증서 정보 추출 함수
 # 단일 호스트명에 대해 인증서 유효기간(일)과 발급기관을 반환
 # 임포트 시 바로 실행되지 않고, 필요한 곳에서만 호출됩니다.
 def get_ssl_cert_info(hostname: str):
+    if not is_public_hostname(hostname):
+        # SSRF 방지: 내부망·사설 주소로는 접속하지 않음
+        return hostname, None, None
     try:
         ctx = ssl.create_default_context()
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_2  # TLS 1.0/1.1 차단
         with ctx.wrap_socket(socket.socket(), server_hostname=hostname) as s:
             s.settimeout(3)
             s.connect((hostname, 443))
